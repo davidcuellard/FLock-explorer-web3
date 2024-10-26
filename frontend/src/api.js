@@ -1,79 +1,59 @@
 import axios from "axios";
 
 const API_BASE_URL = "/api";
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 10;
 
-// Fetch paginated list of nodes
-export const getNodes = async (page = 1, limit = 10) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/nodes`, {
-      params: { page, limit },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching nodes:", error);
-    throw error;
+const fetchData = async (url, options = {}, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await axios.get(url, options);
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        console.error(`Error fetching data from ${url}:`, error.response.data);
+      } else if (error.request) {
+        console.error(`No response received from ${url}:`, error.request);
+      } else {
+        console.error(`Error during request setup for ${url}:`, error.message);
+      }
+      if (i < retries - 1)
+        await new Promise((resolve) => setTimeout(resolve, delay * 2 ** i));
+      else throw error; 
+    }
   }
 };
 
-// Fetch detailed information for a specific node by ID
-export const getNodeDetails = async (nodeId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/nodes/${nodeId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching node details:", error);
-    throw error;
+
+const getPaginatedList = (
+  endpoint,
+  page = DEFAULT_PAGE,
+  limit = DEFAULT_LIMIT
+) => fetchData(`${API_BASE_URL}/${endpoint}`, { params: { page, limit } });
+
+
+const getDetailsById = (endpoint, id) => {
+  if (endpoint !== "tasks" && !/^0x[a-fA-F0-9]{40}$/.test(id)) {
+    throw new Error(`Invalid Ethereum address format: ${id}`);
   }
+  return fetchData(`${API_BASE_URL}/${endpoint}/${id}`);
 };
 
-// Fetch paginated list of delegators
-export const getDelegators = async (page = 1, limit = 10) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/delegators`, {
-      params: { page, limit },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching delegators:", error);
-    throw error;
-  }
-};
+// API Functions for Nodes
+export const getNodes = (page, limit) => getPaginatedList("nodes", page, limit);
+export const getNodeDetails = (nodeId) => getDetailsById("nodes", nodeId);
 
-// Fetch detailed information for a specific delegator by ID
-export const getDelegatorDetails = async (delegatorId) => {
-  try {
-    const response = await axios.get(
-      `${API_BASE_URL}/delegators/${delegatorId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching delegator details:", error);
-    throw error;
-  }
-};
+// API Functions for Delegators
+export const getDelegators = (page, limit) =>
+  getPaginatedList("delegators", page, limit);
+export const getDelegatorDetails = (delegatorId) =>
+  getDetailsById("delegators", delegatorId);
 
-// Fetch paginated list of validators
-export const getValidators = async (page = 1, limit = 10) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/validators`, {
-      params: { page, limit },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching validators:", error);
-    throw error;
-  }
-};
+// API Functions for Validators
+export const getValidators = (page, limit) =>
+  getPaginatedList("validators", page, limit);
+export const getValidatorDetails = (validatorId) =>
+  getDetailsById("validators", validatorId);
 
-// Fetch detailed information for a specific validator by ID
-export const getValidatorDetails = async (validatorId) => {
-  try {
-    const response = await axios.get(
-      `${API_BASE_URL}/validators/${validatorId}`
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching validator details:", error);
-    throw error;
-  }
-};
+// API Function for Tasks
+export const getTaskDetails = (taskId) => getDetailsById("tasks", taskId);
