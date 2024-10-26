@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const { ethers } = require("ethers");
 const provider = require("./blockchain");
 
@@ -16,7 +16,7 @@ const FML_PROXY_ADDRESS = process.env.FML_ADDRESS;
 
 const TASK_MANAGER_PROXY_ADDRESS = process.env.TASK_MANAGER_ADDRESS;
 // const TASK_MANAGER_IMPLEMENTATION_ADDRESS =
-  process.env.TASK_MANAGER_IMPLEMENTATION_ADDRESS;
+process.env.TASK_MANAGER_IMPLEMENTATION_ADDRESS;
 
 // const STAKING_ADDRESS = process.env.STAKING_ADDRESS;
 const STAKING_ADDRESS = process.env.STAKING_IMPLEMENTATION_ADDRESS;

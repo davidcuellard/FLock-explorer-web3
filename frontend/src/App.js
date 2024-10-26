@@ -39,7 +39,7 @@ function App() {
             />
           </Link>
           <nav className="menu">
-            <Link to="/">Home</Link>
+            {/* <Link to="/">Home</Link> */}
             <Link to="/visualizer">Visualizer</Link>
             <Link to="/nodes">Nodes</Link>
             <Link to="/validators">Validators</Link>
@@ -52,7 +52,7 @@ function App() {
               path="/"
               element={
                 <>
-                  <h1>Hola</h1>
+                  <h1>Welcome to the FLock Explorer</h1>
                 </>
               }
             />
@@ -102,7 +102,7 @@ function App() {
         <footer className="footer">
           <p>
             © 2023 David Cuellar. All rights reserved,{" "}
-            <a href="https://github.com/davidcuellard">GitHub</a>
+            <a target="_blank" href="https://github.com/davidcuellard">GitHub</a>
           </p>
         </footer>
       </div>

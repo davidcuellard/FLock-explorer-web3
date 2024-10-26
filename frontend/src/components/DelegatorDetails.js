@@ -34,7 +34,7 @@ function DelegatorDetails() {
         </p>
       </div>
       <div className="task-list">
-        <h3>Tasks</h3>
+        <h3>Tasks</h3> 
         {delegator.delegatorTasks.map((task) => (
           <div key={task.taskId} className="task-item">
             <div className="task-info">

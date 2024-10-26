@@ -4,6 +4,7 @@ $white: #ffffff;
 $grey-2: rgb(134, 134, 134);
 $grey-5: rgb(33, 33, 33);
 $yellow: rgb(255, 206, 33);
+$yellow-2: rgb(219, 179, 38);
 
 body,
 html {
@@ -67,7 +68,13 @@ main {
       padding: 5px 10px;
       border-radius: 5px;
       text-decoration: none;
+
+      
     }
+
+    .view-button:hover{
+        background-color: $yellow-2;
+      }
   }
 
   .pagination {
@@ -162,7 +169,7 @@ p {
 a.view-details-btn {
   padding: 8px 12px;
   background-color: $yellow;
-  color: $white;
+  color: $grey-5;
   text-decoration: none;
   border-radius: 4px;
   font-weight: bold;
@@ -170,7 +177,7 @@ a.view-details-btn {
 }
 
 .view-details-btn:hover {
-  background-color: $yellow;
+  background-color: $yellow-2;
 }
 
 .loading {
@@ -195,7 +202,7 @@ a.view-details-btn {
 }
 
 .back-button:hover {
-  background-color: $yellow;
+  background-color: $yellow-2;
 }
 
 header {
@@ -213,6 +220,10 @@ header {
       font-size: 1.5rem;
     }
   }
+
+  .menu a:hover{
+    color: $yellow-2;
+  }
 }
 
 .footer {
@@ -228,5 +239,5 @@ header {
 }
 
 .footer a:hover {
-  color: #fff;
+  color: $yellow-2;
 }

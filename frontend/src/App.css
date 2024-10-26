@@ -43,6 +43,8 @@ main {
       padding: 5px 10px;
       border-radius: 5px;
       text-decoration: none; }
+    .list-container .list-table .view-button:hover {
+      background-color: #dbb326; }
   .list-container .pagination {
     display: flex;
     justify-content: space-between;
@@ -117,14 +119,14 @@ p {
 a.view-details-btn {
   padding: 8px 12px;
   background-color: #ffce21;
-  color: #ffffff;
+  color: #212121;
   text-decoration: none;
   border-radius: 4px;
   font-weight: bold;
   transition: background-color 0.3s ease; }
 
 .view-details-btn:hover {
-  background-color: #ffce21; }
+  background-color: #dbb326; }
 
 .loading {
   margin-top: 200px;
@@ -146,7 +148,7 @@ a.view-details-btn {
   transition: background-color 0.3s ease; }
 
 .back-button:hover {
-  background-color: #ffce21; }
+  background-color: #dbb326; }
 
 header {
   display: flex;
@@ -160,6 +162,8 @@ header {
       color: #ffffff;
       text-decoration: none;
       font-size: 1.5rem; }
+  header .menu a:hover {
+    color: #dbb326; }
 
 .footer {
   text-align: center;
@@ -172,4 +176,4 @@ header {
   text-decoration: none; }
 
 .footer a:hover {
-  color: #fff; }
+  color: #dbb326; }
