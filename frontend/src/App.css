@@ -1,25 +1,31 @@
-body {
-  font-family: "Arial", sans-serif;
-  background-color: #f4f6f8;
-  color: #333;
-  margin: 0; }
-
-.header {
-  background-color: #3498db;
-  color: white;
-  padding: 1rem;
-  text-align: center; }
-  .header h1 {
-    font-size: 2rem;
-    margin: 0; }
-
-.button {
-  background-color: #2ecc71;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease; }
-  .button:hover {
-    background-color: #25a25a; }
+.list-container {
+  margin: 20px; }
+  .list-container .list-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px; }
+    .list-container .list-table th, .list-container .list-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left; }
+    .list-container .list-table .view-button {
+      color: #fff;
+      background-color: #007bff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      text-decoration: none; }
+  .list-container .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px; }
+    .list-container .pagination .page-button {
+      padding: 5px 10px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer; }
+      .list-container .pagination .page-button:disabled {
+        background-color: #ddd;
+        cursor: not-allowed; }
