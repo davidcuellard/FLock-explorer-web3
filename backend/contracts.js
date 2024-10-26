@@ -3,21 +3,23 @@ const { ethers } = require("ethers");
 const provider = require("./blockchain");
 
 // Importing ABIs
-const FML_ABI = require("./abis/FML.json");
+// const FML_ABI = require("./abis/FML.json");
 const FMLImplementation_ABI = require("./abis/FMLImplementation.json");
-const TaskManager_ABI = require("./abis/TaskManager.json");
+// const TaskManager_ABI = require("./abis/TaskManager.json");
 const TaskManagerImplementation_ABI = require("./abis/TaskManagerImplementation.json");
-const Staking_ABI = require("./abis/Staking.json");
+// const Staking_ABI = require("./abis/Staking.json");
+const Staking_ABI = require("./abis/StakingImplementation.json");
 
 // Contract addresses
 const FML_PROXY_ADDRESS = process.env.FML_ADDRESS;
-const FML_IMPLEMENTATION_ADDRESS = process.env.FML_IMPLEMENTATION_ADDRESS;
+// const FML_IMPLEMENTATION_ADDRESS = process.env.FML_IMPLEMENTATION_ADDRESS;
 
 const TASK_MANAGER_PROXY_ADDRESS = process.env.TASK_MANAGER_ADDRESS;
-const TASK_MANAGER_IMPLEMENTATION_ADDRESS =
+// const TASK_MANAGER_IMPLEMENTATION_ADDRESS =
   process.env.TASK_MANAGER_IMPLEMENTATION_ADDRESS;
 
-const STAKING_ADDRESS = process.env.STAKING_ADDRESS;
+// const STAKING_ADDRESS = process.env.STAKING_ADDRESS;
+const STAKING_ADDRESS = process.env.STAKING_IMPLEMENTATION_ADDRESS;
 
 // Creating contract instances
 const FMLContract = new ethers.Contract(
