@@ -2,8 +2,9 @@ const { TaskManagerContract } = require("./contracts");
 
 async function testTaskManager() {
   try {
-    // Fetch events as previously discussed
-    const filter = TaskManagerContract.filters.NodeStakeDeposited();
+    const filter = TaskManagerContract.filters.RewardsClaimed(
+      "0x177f0758030e963229dFD221ec09fD23E2938c0C"
+    );
     const events = await TaskManagerContract.queryFilter(
       filter,
       0,
@@ -12,7 +13,7 @@ async function testTaskManager() {
 
     const nodeAddresses = new Set();
     for (const event of events) {
-      nodeAddresses.add(event.args.node);
+      nodeAddresses.add(event);
     }
 
     console.log("Training Nodes:", Array.from(nodeAddresses));
