@@ -5,6 +5,10 @@ const port = 3001;
 
 app.use(cors());
 
+const routes = require("./routes");
+
+app.use("/api", routes);
+
 app.get("/", (req, res) => {
   res.send("Flock Explorer Backend");
 });
