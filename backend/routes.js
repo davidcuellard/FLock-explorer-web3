@@ -175,9 +175,6 @@ router.get("/validators/:id", async (req, res) => {
   }
 });
 
-/**
- * Route to get basic delegator information
- */
 router.get("/delegators", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -216,9 +213,6 @@ router.get("/delegators", async (req, res) => {
   }
 });
 
-/**
- * Route to get full delegator details by ID
- */
 router.get("/delegators/:id", async (req, res) => {
   const delegatorId = req.params.id;
   try {
@@ -297,5 +291,9 @@ router.get("/tasks/:id", async (req, res) => {
     });
   }
 });
+
+
+
+
 
 module.exports = router;
