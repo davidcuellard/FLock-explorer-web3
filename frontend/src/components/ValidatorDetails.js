@@ -1,22 +1,94 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { getValidatorDetails } from "../api";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+import StakeHistoryChart from "./StakeHistoryChart";
+
+const fetchDataWithRetry = async (url, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise((resolve) =>
+        setTimeout(resolve, delay * Math.pow(2, i))
+      );
+    }
+  }
+};
+
+const getValidatorDetails = (validatorId) =>
+  fetchDataWithRetry(`/api/validators/${validatorId}`);
 
 function ValidatorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [validator, setValidator] = useState(null);
+  const [graphData, setGraphData] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchValidator = async () => {
-      if (id) {
-        const data = await getValidatorDetails(id);
-        setValidator(data);
+      try {
+        if (id) {
+          const data = await getValidatorDetails(id);
+          setValidator(data);
+
+          let cumulativeStake = 0;
+          const dataPoints = [];
+
+          dataPoints.push({
+            blockNumber: 0,
+            amount: cumulativeStake,
+            type: "Initial",
+            taskId: "N/A",
+          });
+
+          const events = [
+            ...data.deposits.map((deposit) => ({
+              blockNumber: deposit.blockNumber,
+              change: parseInt(deposit.amount),
+              type: "Deposit",
+              taskId: deposit.taskId,
+            })),
+            ...data.withdrawals.map((withdrawal) => ({
+              blockNumber: withdrawal.blockNumber,
+              change: -parseInt(withdrawal.amount), // Negative for withdrawal
+              type: "Withdrawal",
+              taskId: withdrawal.taskId,
+            })),
+          ];
+
+          events.sort((a, b) => a.blockNumber - b.blockNumber);
+
+          events.forEach((event) => {
+            cumulativeStake += event.change;
+            dataPoints.push({
+              blockNumber: event.blockNumber,
+              amount: cumulativeStake,
+              type: event.type,
+              taskId: event.taskId,
+            });
+          });
+
+          dataPoints.push({
+            blockNumber: 17106529,
+            amount: cumulativeStake,
+            type: "Final",
+            taskId: "N/A",
+          });
+
+          setGraphData(dataPoints);
+        }
+      } catch (error) {
+        console.error("Error fetching validator details:", error);
+        setError("Unable to fetch validator details, please try again later.");
       }
     };
     fetchValidator();
   }, [id]);
 
+  if (error) return <div className="error-message">{error}</div>;
   if (!validator) return <div className="loading">Loading...</div>;
 
   return (
@@ -55,6 +127,9 @@ function ValidatorDetails() {
           </div>
         ))}
       </div>
+
+      <h3>Validator Stake History</h3>
+      <StakeHistoryChart graphData={graphData} />
     </div>
   );
 }

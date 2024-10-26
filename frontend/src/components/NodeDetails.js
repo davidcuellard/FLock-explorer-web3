@@ -1,8 +1,8 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import StakeHistoryChart from "./StakeHistoryChart";
 
-// Helper function with retry logic for fetching data
 const fetchDataWithRetry = async (url, retries = 3, delay = 1000) => {
   for (let i = 0; i < retries; i++) {
     try {
@@ -17,13 +17,13 @@ const fetchDataWithRetry = async (url, retries = 3, delay = 1000) => {
   }
 };
 
-// Function to fetch node details
 const getNodeDetails = (nodeId) => fetchDataWithRetry(`/api/nodes/${nodeId}`);
 
 function NodeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [node, setNode] = useState(null);
+  const [graphData, setGraphData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -32,6 +32,52 @@ function NodeDetails() {
         if (id) {
           const data = await getNodeDetails(id);
           setNode(data);
+
+          let cumulativeStake = 0;
+          const dataPoints = [];
+
+          dataPoints.push({
+            blockNumber: 0,
+            amount: cumulativeStake,
+            type: "Initial",
+            taskId: "N/A",
+          });
+
+          const events = [
+            ...data.deposits.map((deposit) => ({
+              blockNumber: deposit.blockNumber,
+              change: parseInt(deposit.amount),
+              type: "Deposit",
+              taskId: deposit.taskId,
+            })),
+            ...data.withdrawals.map((withdrawal) => ({
+              blockNumber: withdrawal.blockNumber,
+              change: -parseInt(withdrawal.amount), 
+              type: "Withdrawal",
+              taskId: withdrawal.taskId,
+            })),
+          ];
+
+          events.sort((a, b) => a.blockNumber - b.blockNumber);
+
+          events.forEach((event) => {
+            cumulativeStake += event.change;
+            dataPoints.push({
+              blockNumber: event.blockNumber,
+              amount: cumulativeStake,
+              type: event.type,
+              taskId: event.taskId,
+            });
+          });
+
+          dataPoints.push({
+            blockNumber: 17106529,
+            amount: cumulativeStake,
+            type: "Final",
+            taskId: "N/A",
+          });
+
+          setGraphData(dataPoints);
         }
       } catch (error) {
         console.error("Error fetching node details:", error);
@@ -79,6 +125,9 @@ function NodeDetails() {
           </div>
         ))}
       </div>
+
+      <h3>Node Stake History</h3>
+      <StakeHistoryChart graphData={graphData} />
     </div>
   );
 }

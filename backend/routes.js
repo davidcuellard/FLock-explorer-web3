@@ -43,12 +43,12 @@ router.get("/nodes", async (req, res) => {
 
 router.get("/nodes/:id", async (req, res) => {
   const nodeId = req.params.id;
+
   try {
     const totalStakes = await TaskManagerContract.getTotalStakes(nodeId);
     const rewardAmount = await TaskManagerContract.userRewards(nodeId);
     const availableRewardTasksForUser =
       await TaskManagerContract.getAvailableRewardTasksForUser(nodeId);
-
     const taskIds = await TaskManagerContract.getNodeTasks(nodeId);
     const taskStakeDetails = await Promise.all(
       taskIds.map(async (taskId) => {
@@ -63,15 +63,52 @@ router.get("/nodes/:id", async (req, res) => {
       })
     );
 
+    const depositFilter = TaskManagerContract.filters.NodeStakeDeposited(
+      null,
+      nodeId
+    );
+    const depositEvents = await TaskManagerContract.queryFilter(
+      depositFilter,
+      0,
+      "latest"
+    );
+
+    const deposits = depositEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      taskId: event.args[0].toString(), 
+      nodeAddress: event.args[1], 
+      amount: event.args[2].toString(), 
+    }));
+
+    
+    const withdrawFilter = TaskManagerContract.filters.NodeStakeWithdrawn(
+      null,
+      nodeId
+    );
+    const withdrawEvents = await TaskManagerContract.queryFilter(
+      withdrawFilter,
+      0,
+      "latest"
+    );
+
+    const withdrawals = withdrawEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      taskId: event.args[0].toString(),
+      nodeAddress: event.args[1], 
+      amount: event.args[2].toString(), 
+    }));
+
+
     res.json({
       address: nodeId,
       totalStakes: totalStakes.toString(),
-      taskIds: taskIds.map((id) => id.toString()),
       rewardAmount: rewardAmount.toString(),
       availableRewardTasksForUser: availableRewardTasksForUser.map((id) =>
         id.toString()
       ),
       taskStakeDetails,
+      deposits,
+      withdrawals,
     });
   } catch (error) {
     console.error("Error fetching node details:", error);
@@ -123,6 +160,7 @@ router.get("/validators", async (req, res) => {
 router.get("/validators/:id", async (req, res) => {
   const validatorId = req.params.id;
   try {
+
     const validatorStake = await TaskManagerContract.getTotalStakes(
       validatorId
     );
@@ -140,15 +178,14 @@ router.get("/validators/:id", async (req, res) => {
           index
         );
 
-        const delegatorStake =
-          await TaskManagerContract.validatorTotalDelegatorStakes(
-            taskId,
-            validatorId
-          );
+        const validatorStake = await TaskManagerContract.getValidatorStakes(
+          taskId,
+          validatorId
+        );
 
         validatorTasks.push({
           taskId: taskId.toString(),
-          delegatorStake: delegatorStake.toString(),
+          validatorStake: validatorStake.toString(),
         });
 
         index += 1;
@@ -156,6 +193,38 @@ router.get("/validators/:id", async (req, res) => {
         break;
       }
     }
+
+    const depositsFilter = TaskManagerContract.filters.ValidatorStakeDeposited(
+      null,
+      validatorId
+    );
+    const deposits = await TaskManagerContract.queryFilter(
+      depositsFilter,
+      0,
+      "latest"
+    );
+
+    const withdrawalsFilter =
+      TaskManagerContract.filters.ValidatorStakeWithdrawn(null, validatorId);
+    const withdrawals = await TaskManagerContract.queryFilter(
+      withdrawalsFilter,
+      0,
+      "latest"
+    );
+
+    const depositsData = deposits.map((event) => ({
+      blockNumber: event.blockNumber,
+      taskId: event.args[0].toString(),
+      validator: event.args[1],
+      amount: event.args[2].toString(),
+    }));
+
+    const withdrawalsData = withdrawals.map((event) => ({
+      blockNumber: event.blockNumber,
+      taskId: event.args[0].toString(),
+      validator: event.args[1],
+      amount: event.args[2].toString(),
+    }));
 
     res.json({
       address: validatorId,
@@ -165,6 +234,8 @@ router.get("/validators/:id", async (req, res) => {
         id.toString()
       ),
       validatorTasks,
+      deposits: depositsData,
+      withdrawals: withdrawalsData,
     });
   } catch (error) {
     console.error("Error fetching validator details:", error);
@@ -174,6 +245,7 @@ router.get("/validators/:id", async (req, res) => {
     });
   }
 });
+
 
 router.get("/delegators", async (req, res) => {
   try {
@@ -276,7 +348,7 @@ router.get("/tasks/:id", async (req, res) => {
       id: taskDetails.id.toString(),
       isCompleted: taskDetails.isCompleted,
       creator: taskDetails.creator,
-      startTime: new Date(Number(taskDetails.startTime) * 1000).toISOString(), // Ensure conversion from BigInt
+      startTime: new Date(Number(taskDetails.startTime) * 1000).toISOString(),
       expectedDuration: taskDetails.expectedDuration.toString(),
       stakeAmount: taskDetails.stakeAmount.toString(),
       taskName: taskDetails.taskName,
@@ -291,7 +363,6 @@ router.get("/tasks/:id", async (req, res) => {
     });
   }
 });
-
 
 
 
