@@ -57,3 +57,6 @@ export const getValidatorDetails = (validatorId) =>
 
 // API Function for Tasks
 export const getTaskDetails = (taskId) => getDetailsById("tasks", taskId);
+
+// API Function for Rewards
+export const getRewardsClaimed = () => fetchData(`${API_BASE_URL}/rewards-claimed`);

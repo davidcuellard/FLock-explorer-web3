@@ -7,6 +7,10 @@ import DelegatorDetails from "./components/DelegatorDetails";
 import { getNodes, getValidators, getDelegators } from "./api";
 import "./App.scss";
 import TaskDetails from "./components/TaskDetails";
+import Visualizer from "./components/Visualizer";
+import Nodes from "./components/Nodes";
+import Validators from "./components/Validators";
+import Delegators from "./components/Delegators";
 
 function App() {
   const [nodes, setNodes] = useState([]);
@@ -39,8 +43,7 @@ function App() {
             />
           </Link>
           <nav className="menu">
-            {/* <Link to="/">Home</Link> */}
-            <Link to="/visualizer">Visualizer</Link>
+            <Link to="/">Visualizer</Link>
             <Link to="/nodes">Nodes</Link>
             <Link to="/validators">Validators</Link>
             <Link to="/delegators">Delegators</Link>
@@ -48,51 +51,10 @@ function App() {
         </header>
         <main>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <h1>Welcome to the FLock Explorer</h1>
-                </>
-              }
-            />
-
-            <Route
-              path="/nodes"
-              element={
-                <List
-                  title="Nodes"
-                  data={nodes}
-                  itemsPerPage={itemsPerPage}
-                  currentPage={nodesPage}
-                  onPageChange={setNodesPage}
-                />
-              }
-            />
-            <Route
-              path="/validators"
-              element={
-                <List
-                  title="Validators"
-                  data={validators}
-                  itemsPerPage={itemsPerPage}
-                  currentPage={validatorsPage}
-                  onPageChange={setValidatorsPage}
-                />
-              }
-            />
-            <Route
-              path="/delegators"
-              element={
-                <List
-                  title="Delegators"
-                  data={delegators}
-                  itemsPerPage={itemsPerPage}
-                  currentPage={delegatorsPage}
-                  onPageChange={setDelegatorsPage}
-                />
-              }
-            />
+            <Route path="/" element={<Visualizer />} />
+            <Route path="/nodes" element={<Nodes />} />
+            <Route path="/validators" element={<Validators />} />
+            <Route path="/delegators" element={<Delegators />} />
             <Route path="/nodes/:id" element={<NodeDetails />} />
             <Route path="/validators/:id" element={<ValidatorDetails />} />
             <Route path="/delegators/:id" element={<DelegatorDetails />} />
@@ -102,7 +64,9 @@ function App() {
         <footer className="footer">
           <p>
             © 2023 David Cuellar. All rights reserved,{" "}
-            <a target="_blank" href="https://github.com/davidcuellard">GitHub</a>
+            <a target="_blank" href="https://github.com/davidcuellard">
+              GitHub
+            </a>
           </p>
         </footer>
       </div>

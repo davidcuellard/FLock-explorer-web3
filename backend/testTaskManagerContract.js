@@ -2,9 +2,7 @@ const { TaskManagerContract } = require("./contracts");
 
 async function testTaskManager() {
   try {
-    const filter = TaskManagerContract.filters.RewardsClaimed(
-      "0x177f0758030e963229dFD221ec09fD23E2938c0C"
-    );
+    const filter = TaskManagerContract.filters.TaskFinished();
     const events = await TaskManagerContract.queryFilter(
       filter,
       0,

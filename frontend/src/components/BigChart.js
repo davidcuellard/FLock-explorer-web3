@@ -11,11 +11,11 @@ import {
   Label,
 } from "recharts";
 
-function StakeHistoryChart({ graphData }) {
+function BigChart({ graphData }) {
   return (
     <LineChart
-      width={600}
-      height={300}
+      width={800}
+      height={400}
       data={graphData}
       margin={{
         top: 20,
@@ -38,4 +38,4 @@ function StakeHistoryChart({ graphData }) {
   );
 }
 
-export default StakeHistoryChart;
+export default BigChart;

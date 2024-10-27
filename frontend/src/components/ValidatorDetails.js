@@ -1,30 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "axios";
-import StakeHistoryChart from "./StakeHistoryChart";
-
-const fetchDataWithRetry = async (url, retries = 3, delay = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise((resolve) =>
-        setTimeout(resolve, delay * Math.pow(2, i))
-      );
-    }
-  }
-};
-
-const getValidatorDetails = (validatorId) =>
-  fetchDataWithRetry(`/api/validators/${validatorId}`);
+import NiceChart from "./NiceChart";
+import { formatNumber } from "../utils/formatNumber";
+import { getValidatorDetails } from "../api";
 
 function ValidatorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [validator, setValidator] = useState(null);
   const [graphData, setGraphData] = useState([]);
+  const [rewardGraphData, setRewardGraphData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -79,6 +64,32 @@ function ValidatorDetails() {
           });
 
           setGraphData(dataPoints);
+
+          let cumulativeReward = 0;
+          const rewardDataPoints = [];
+
+          rewardDataPoints.push({
+            blockNumber: 0,
+            amount: cumulativeReward,
+            type: "Initial",
+          });
+
+          data.rewardsClaimed.forEach((reward) => {
+            cumulativeReward += parseInt(reward.amount);
+            rewardDataPoints.push({
+              blockNumber: reward.blockNumber,
+              amount: cumulativeReward,
+              type: "Reward",
+            });
+          });
+
+          rewardDataPoints.push({
+            blockNumber: 17106529,
+            amount: cumulativeReward,
+            type: "Final",
+          });
+
+          setRewardGraphData(rewardDataPoints);
         }
       } catch (error) {
         console.error("Error fetching validator details:", error);
@@ -102,10 +113,16 @@ function ValidatorDetails() {
           <span className="label">Address:</span> {validator.address}
         </p>
         <p>
-          <span className="label">Total Stakes:</span> {validator.totalStakes}
+          <span className="label">Total Stakes:</span>{" "}
+          {formatNumber(validator.totalStakes)}
         </p>
         <p>
-          <span className="label">Reward Amount:</span> {validator.rewardAmount}
+          <span className="label">User Reward Amount:</span>{" "}
+          {formatNumber(validator.rewardAmount)}
+        </p>
+        <p>
+          <span className="label">Rewards Claimed:</span>{" "}
+          {formatNumber(rewardGraphData[rewardGraphData.length - 1].amount)}
         </p>
       </div>
       <div className="task-list">
@@ -117,8 +134,8 @@ function ValidatorDetails() {
                 <span className="label">Task ID:</span> {task.taskId}
               </p>
               <p>
-                <span className="label">Delegator Stake:</span>{" "}
-                {task.delegatorStake}
+                <span className="label">Validator Stake:</span>{" "}
+                {task.validatorStake}
               </p>
             </div>
             <Link to={`/tasks/${task.taskId}`} className="view-details-btn">
@@ -129,7 +146,10 @@ function ValidatorDetails() {
       </div>
 
       <h3>Validator Stake History</h3>
-      <StakeHistoryChart graphData={graphData} />
+      <NiceChart graphData={graphData} />
+
+      <h3>Total Rewards Claimed History</h3>
+      <NiceChart graphData={rewardGraphData} />
     </div>
   );
 }
