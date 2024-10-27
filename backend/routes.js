@@ -14,23 +14,80 @@ router.get("/nodes", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const cacheKey = `nodes:page:${page}:limit:${limit}`;
 
-    const filter = TaskManagerContract.filters.NodeStakeDeposited();
-    const events = await TaskManagerContract.queryFilter(filter, 0, "latest");
+    const cachedData = cache.get(cacheKey);
+    if (cachedData) {
+      return res.json(cachedData);
+    }
 
-    const nodeAddresses = Array.from(
-      new Set(events.map((event) => event.args.node))
+    const nodeDepositFilter = TaskManagerContract.filters.NodeStakeDeposited();
+    const nodeDepositEvents = await TaskManagerContract.queryFilter(
+      nodeDepositFilter,
+      0,
+      "latest"
     );
-    const paginatedNodeAddresses = paginate(nodeAddresses, page, limit);
+
+    const nodes = new Set();
+    nodeDepositEvents.forEach((event) => {
+      nodes.add(event.args[1]); 
+    });
+    const nodeAddresses = Array.from(nodes);
+
+    const rewardsFilter = TaskManagerContract.filters.RewardsClaimed();
+    const rewardsEvents = await TaskManagerContract.queryFilter(
+      rewardsFilter,
+      0,
+      "latest"
+    );
+
+    const nodeRewardsMap = {};
+    rewardsEvents.forEach((event) => {
+      const nodeAddress = event.args[0];
+      const amount = BigInt(event.args[1]);
+
+      if (nodeRewardsMap[nodeAddress]) {
+        nodeRewardsMap[nodeAddress] += amount;
+      } else {
+        nodeRewardsMap[nodeAddress] = amount;
+      }
+    });
+
+    const sortedNodes = nodeAddresses.sort((a, b) => {
+      const rewardsA = nodeRewardsMap[a] || BigInt(0);
+      const rewardsB = nodeRewardsMap[b] || BigInt(0);
+
+      if (rewardsA > rewardsB) return -1;
+      if (rewardsA < rewardsB) return 1;
+      return 0;
+    });
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedNodeAddresses = sortedNodes.slice(startIndex, endIndex);
 
     const nodesData = await Promise.all(
       paginatedNodeAddresses.map(async (nodeAddress) => {
-        const totalStakes = await TaskManagerContract.getTotalStakes(
-          nodeAddress
-        );
-        return { address: nodeAddress, totalStakes: totalStakes.toString() };
+        let totalStakes = "0";
+        try {
+          totalStakes = (
+            await TaskManagerContract.getTotalStakes(nodeAddress)
+          ).toString();
+        } catch (error) {
+          console.error(
+            `Error fetching total stakes for node ${nodeAddress}:`,
+            error
+          );
+        }
+        return {
+          address: nodeAddress,
+          rewardAmount: (nodeRewardsMap[nodeAddress] || BigInt(0)).toString(),
+          totalStakes,
+        };
       })
     );
+
+    cache.set(cacheKey, nodesData);
 
     res.json(nodesData);
   } catch (error) {
@@ -75,12 +132,11 @@ router.get("/nodes/:id", async (req, res) => {
 
     const deposits = depositEvents.map((event) => ({
       blockNumber: event.blockNumber,
-      taskId: event.args[0].toString(), 
-      nodeAddress: event.args[1], 
-      amount: event.args[2].toString(), 
+      taskId: event.args[0].toString(),
+      nodeAddress: event.args[1],
+      amount: event.args[2].toString(),
     }));
 
-    
     const withdrawFilter = TaskManagerContract.filters.NodeStakeWithdrawn(
       null,
       nodeId
@@ -94,10 +150,23 @@ router.get("/nodes/:id", async (req, res) => {
     const withdrawals = withdrawEvents.map((event) => ({
       blockNumber: event.blockNumber,
       taskId: event.args[0].toString(),
-      nodeAddress: event.args[1], 
-      amount: event.args[2].toString(), 
+      nodeAddress: event.args[1],
+      amount: event.args[2].toString(),
     }));
 
+    const rewardsClaimedFilter =
+      TaskManagerContract.filters.RewardsClaimed(nodeId);
+    const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
+      rewardsClaimedFilter,
+      0,
+      "latest"
+    );
+
+    const rewardsClaimed = rewardsClaimedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      nodeAddress: event.args[0],
+      amount: event.args[1].toString(),
+    }));
 
     res.json({
       address: nodeId,
@@ -109,6 +178,7 @@ router.get("/nodes/:id", async (req, res) => {
       taskStakeDetails,
       deposits,
       withdrawals,
+      rewardsClaimed,
     });
   } catch (error) {
     console.error("Error fetching node details:", error);
@@ -124,26 +194,72 @@ router.get("/validators", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const filter = TaskManagerContract.filters.ValidatorStakeDeposited();
-    const events = await TaskManagerContract.queryFilter(filter, 0, "latest");
-
-    const validatorAddresses = Array.from(
-      new Set(events.map((event) => event.args.validator))
+    const stakeFilter = TaskManagerContract.filters.ValidatorStakeDeposited();
+    const stakeEvents = await TaskManagerContract.queryFilter(
+      stakeFilter,
+      0,
+      "latest"
     );
-    const paginatedValidatorAddresses = paginate(
-      validatorAddresses,
-      page,
-      limit
+
+    const validatorAddressesWithStakes = new Set(
+      stakeEvents.map((event) => event.args.validator)
+    );
+
+    const rewardsClaimedFilter = TaskManagerContract.filters.RewardsClaimed();
+    const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
+      rewardsClaimedFilter,
+      0,
+      "latest"
+    );
+
+    const rewardsMap = new Map();
+    rewardsClaimedEvents.forEach((event) => {
+      const validatorAddress = event.args[0];
+      const rewardAmount = BigInt(event.args[1]);
+
+      if (validatorAddressesWithStakes.has(validatorAddress)) {
+        if (rewardsMap.has(validatorAddress)) {
+          rewardsMap.set(
+            validatorAddress,
+            rewardsMap.get(validatorAddress) + rewardAmount
+          );
+        } else {
+          rewardsMap.set(validatorAddress, rewardAmount);
+        }
+      }
+    });
+
+    let validatorsArray = Array.from(rewardsMap, ([address, rewardAmount]) => ({
+      address,
+      rewardAmount,
+    }));
+
+    validatorsArray.sort((a, b) => (b.rewardAmount > a.rewardAmount ? 1 : -1));
+
+    const paginatedValidators = validatorsArray.slice(
+      (page - 1) * limit,
+      page * limit
     );
 
     const validatorsData = await Promise.all(
-      paginatedValidatorAddresses.map(async (validatorAddress) => {
-        const validatorStake = await TaskManagerContract.getTotalStakes(
-          validatorAddress
-        );
+      paginatedValidators.map(async (validator) => {
+        let totalStakes = "0";
+        try {
+          const validatorStake = await TaskManagerContract.getTotalStakes(
+            validator.address
+          );
+          totalStakes = validatorStake.toString();
+        } catch (error) {
+          console.error(
+            `Error fetching total stakes for validator ${validator.address}:`,
+            error
+          );
+        }
+
         return {
-          address: validatorAddress,
-          totalStakes: validatorStake.toString(),
+          address: validator.address,
+          rewardAmount: validator.rewardAmount.toString(),
+          totalStakes,
         };
       })
     );
@@ -160,7 +276,6 @@ router.get("/validators", async (req, res) => {
 router.get("/validators/:id", async (req, res) => {
   const validatorId = req.params.id;
   try {
-
     const validatorStake = await TaskManagerContract.getTotalStakes(
       validatorId
     );
@@ -226,6 +341,20 @@ router.get("/validators/:id", async (req, res) => {
       amount: event.args[2].toString(),
     }));
 
+    const rewardsClaimedFilter =
+      TaskManagerContract.filters.RewardsClaimed(validatorId);
+    const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
+      rewardsClaimedFilter,
+      0,
+      "latest"
+    );
+
+    const rewardsClaimed = rewardsClaimedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      nodeAddress: event.args[0],
+      amount: event.args[1].toString(),
+    }));
+
     res.json({
       address: validatorId,
       totalStakes: validatorStake.toString(),
@@ -236,6 +365,7 @@ router.get("/validators/:id", async (req, res) => {
       validatorTasks,
       deposits: depositsData,
       withdrawals: withdrawalsData,
+      rewardsClaimed,
     });
   } catch (error) {
     console.error("Error fetching validator details:", error);
@@ -245,7 +375,6 @@ router.get("/validators/:id", async (req, res) => {
     });
   }
 });
-
 
 router.get("/delegators", async (req, res) => {
   try {
@@ -291,6 +420,7 @@ router.get("/delegators/:id", async (req, res) => {
     const totalDelegationAmount = await TaskManagerContract.getTotalStakes(
       delegatorId
     );
+    const rewardAmount = await TaskManagerContract.userRewards(delegatorId);
 
     const delegatorTasks = [];
     let index = 0;
@@ -325,10 +455,26 @@ router.get("/delegators/:id", async (req, res) => {
       }
     }
 
+    const rewardsClaimedFilter =
+      TaskManagerContract.filters.RewardsClaimed(delegatorId);
+    const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
+      rewardsClaimedFilter,
+      0,
+      "latest"
+    );
+
+    const rewardsClaimed = rewardsClaimedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      nodeAddress: event.args[0],
+      amount: event.args[1].toString(),
+    }));
+
     res.json({
       address: delegatorId,
       totalStakes: totalDelegationAmount.toString(),
+      rewardAmount: rewardAmount.toString(),
       delegatorTasks,
+      rewardsClaimed,
     });
   } catch (error) {
     console.error("Error fetching delegator details:", error);
@@ -364,7 +510,25 @@ router.get("/tasks/:id", async (req, res) => {
   }
 });
 
+router.get("/rewards-claimed", async (req, res) => {
+  try {
+    const filter = TaskManagerContract.filters.RewardsClaimed();
+    const events = await TaskManagerContract.queryFilter(filter, 0, "latest");
 
+    const rewardsClaimed = events.map((event) => ({
+      blockNumber: event.blockNumber,
+      nodeAddress: event.args[0],
+      amount: event.args[1].toString(),
+    }));
 
+    res.json(rewardsClaimed);
+  } catch (error) {
+    console.error("Error fetching reward claim details:", error);
+    res.status(500).json({
+      error: "Error fetching reward claim details",
+      details: error.message,
+    });
+  }
+});
 
 module.exports = router;

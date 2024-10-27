@@ -1,17 +1,52 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getDelegatorDetails } from "../api";
+import { formatNumber } from "../utils/formatNumber";
+import NiceChart from "./NiceChart";
 
 function DelegatorDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [delegator, setDelegator] = useState(null);
+  const [rewardGraphData, setRewardGraphData] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDelegator = async () => {
-      if (id) {
-        const data = await getDelegatorDetails(id);
-        setDelegator(data);
+      try {
+        if (id) {
+          const data = await getDelegatorDetails(id);
+          setDelegator(data);
+
+          let cumulativeReward = 0;
+          const rewardDataPoints = [];
+
+          rewardDataPoints.push({
+            blockNumber: 0,
+            amount: cumulativeReward,
+            type: "Initial",
+          });
+
+          data.rewardsClaimed.forEach((reward) => {
+            cumulativeReward += parseInt(reward.amount);
+            rewardDataPoints.push({
+              blockNumber: reward.blockNumber,
+              amount: cumulativeReward,
+              type: "Reward",
+            });
+          });
+
+          rewardDataPoints.push({
+            blockNumber: 17106529,
+            amount: cumulativeReward,
+            type: "Final",
+          });
+
+          setRewardGraphData(rewardDataPoints);
+        }
+      } catch (error) {
+        console.error("Error fetching delegator details:", error);
+        setError("Unable to fetch delegator details, please try again later.");
       }
     };
     fetchDelegator();
@@ -30,11 +65,20 @@ function DelegatorDetails() {
           <span className="label">Address:</span> {delegator.address}
         </p>
         <p>
-          <span className="label">Total Stakes:</span> {delegator.totalStakes}
+          <span className="label">Total Stakes:</span>{" "}
+          {formatNumber(delegator.totalStakes)}
+        </p>
+        <p>
+          <span className="label">User Reward Amount:</span>{" "}
+          {formatNumber(delegator.rewardAmount)}
+        </p>
+        <p>
+          <span className="label">Rewards Claimed:</span>{" "}
+          {formatNumber(rewardGraphData[rewardGraphData.length - 1].amount)}
         </p>
       </div>
       <div className="task-list">
-        <h3>Tasks</h3> 
+        <h3>Tasks</h3>
         {delegator.delegatorTasks.map((task) => (
           <div key={task.taskId} className="task-item">
             <div className="task-info">
@@ -56,6 +100,9 @@ function DelegatorDetails() {
           </div>
         ))}
       </div>
+
+      <h3>Total Rewards Claimed History</h3>
+      <NiceChart graphData={rewardGraphData} />
     </div>
   );
 }

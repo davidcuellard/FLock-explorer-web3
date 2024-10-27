@@ -1,29 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import StakeHistoryChart from "./StakeHistoryChart";
-
-const fetchDataWithRetry = async (url, retries = 3, delay = 1000) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise((resolve) =>
-        setTimeout(resolve, delay * Math.pow(2, i))
-      );
-    }
-  }
-};
-
-const getNodeDetails = (nodeId) => fetchDataWithRetry(`/api/nodes/${nodeId}`);
+import NiceChart from "./NiceChart";
+import { formatNumber } from "../utils/formatNumber";
+import { getNodeDetails } from "../api";
 
 function NodeDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [node, setNode] = useState(null);
-  const [graphData, setGraphData] = useState([]);
+  const [stakeGraphData, setStakeGraphData] = useState([]);
+  const [rewardGraphData, setRewardGraphData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -34,16 +20,16 @@ function NodeDetails() {
           setNode(data);
 
           let cumulativeStake = 0;
-          const dataPoints = [];
+          const stakeDataPoints = [];
 
-          dataPoints.push({
+          stakeDataPoints.push({
             blockNumber: 0,
             amount: cumulativeStake,
             type: "Initial",
             taskId: "N/A",
           });
 
-          const events = [
+          const stakeEvents = [
             ...data.deposits.map((deposit) => ({
               blockNumber: deposit.blockNumber,
               change: parseInt(deposit.amount),
@@ -52,17 +38,17 @@ function NodeDetails() {
             })),
             ...data.withdrawals.map((withdrawal) => ({
               blockNumber: withdrawal.blockNumber,
-              change: -parseInt(withdrawal.amount), 
+              change: -parseInt(withdrawal.amount),
               type: "Withdrawal",
               taskId: withdrawal.taskId,
             })),
           ];
 
-          events.sort((a, b) => a.blockNumber - b.blockNumber);
+          stakeEvents.sort((a, b) => a.blockNumber - b.blockNumber);
 
-          events.forEach((event) => {
+          stakeEvents.forEach((event) => {
             cumulativeStake += event.change;
-            dataPoints.push({
+            stakeDataPoints.push({
               blockNumber: event.blockNumber,
               amount: cumulativeStake,
               type: event.type,
@@ -70,14 +56,40 @@ function NodeDetails() {
             });
           });
 
-          dataPoints.push({
+          stakeDataPoints.push({
             blockNumber: 17106529,
             amount: cumulativeStake,
             type: "Final",
             taskId: "N/A",
           });
 
-          setGraphData(dataPoints);
+          setStakeGraphData(stakeDataPoints);
+
+          let cumulativeReward = 0;
+          const rewardDataPoints = [];
+
+          rewardDataPoints.push({
+            blockNumber: 0,
+            amount: cumulativeReward,
+            type: "Initial",
+          });
+
+          data.rewardsClaimed.forEach((reward) => {
+            cumulativeReward += parseInt(reward.amount);
+            rewardDataPoints.push({
+              blockNumber: reward.blockNumber,
+              amount: cumulativeReward,
+              type: "Reward",
+            });
+          });
+
+          rewardDataPoints.push({
+            blockNumber: 17106529,
+            amount: cumulativeReward,
+            type: "Final",
+          });
+
+          setRewardGraphData(rewardDataPoints);
         }
       } catch (error) {
         console.error("Error fetching node details:", error);
@@ -102,10 +114,16 @@ function NodeDetails() {
           <span className="label">Address:</span> {node.address}
         </p>
         <p>
-          <span className="label">Total Stakes:</span> {node.totalStakes}
+          <span className="label">Total Stakes:</span>{" "}
+          {formatNumber(node.totalStakes)}
         </p>
         <p>
-          <span className="label">Reward Amount:</span> {node.rewardAmount}
+          <span className="label">User Reward Amount:</span>{" "}
+          {formatNumber(node.rewardAmount)}
+        </p>
+        <p>
+          <span className="label">Rewards Claimed:</span>{" "}
+          {formatNumber(rewardGraphData[rewardGraphData.length - 1].amount)}
         </p>
       </div>
       <div className="task-list">
@@ -127,7 +145,10 @@ function NodeDetails() {
       </div>
 
       <h3>Node Stake History</h3>
-      <StakeHistoryChart graphData={graphData} />
+      <NiceChart graphData={stakeGraphData} />
+
+      <h3>Total Rewards Claimed History</h3>
+      <NiceChart graphData={rewardGraphData} />
     </div>
   );
 }
