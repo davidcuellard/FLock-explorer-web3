@@ -1,4 +1,4 @@
-# FLock Training Nodes and Validators Explorer
+# FLock.io Training Nodes and Validators Explorer
 
 Welcome to the FLock Training Nodes and Validators Explorer! This project aims to provide a transparent view of the FLock ecosystem, allowing users to explore training nodes and validators with detailed metrics and performance insights. Think of it as a specialized block explorer tailored to display AI model metrics, rankings, and earnings.
 
