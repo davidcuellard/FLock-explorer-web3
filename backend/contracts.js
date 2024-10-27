@@ -25,19 +25,19 @@ const STAKING_ADDRESS = process.env.STAKING_IMPLEMENTATION_ADDRESS;
 const FMLContract = new ethers.Contract(
   FML_PROXY_ADDRESS,
   FMLImplementation_ABI,
-  provider
+  provider,
 );
 
 const TaskManagerContract = new ethers.Contract(
   TASK_MANAGER_PROXY_ADDRESS,
   TaskManagerImplementation_ABI,
-  provider
+  provider,
 );
 
 const StakingContract = new ethers.Contract(
   STAKING_ADDRESS,
   Staking_ABI,
-  provider
+  provider,
 );
 
 module.exports = {

@@ -27,7 +27,7 @@ const fetchData = async (url, options = {}, retries = 3, delay = 1000) => {
 const getPaginatedList = (
   endpoint,
   page = DEFAULT_PAGE,
-  limit = DEFAULT_LIMIT
+  limit = DEFAULT_LIMIT,
 ) => fetchData(`${API_BASE_URL}/${endpoint}`, { params: { page, limit } });
 
 const getDetailsById = (endpoint, id) => {

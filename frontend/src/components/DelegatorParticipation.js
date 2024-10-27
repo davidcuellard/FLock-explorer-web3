@@ -8,9 +8,7 @@ function DelegatorParticipation({ tasksCreated, tasksFinished }) {
   const [graphData, setGraphData] = useState([]);
   const [error, setError] = useState(null);
 
-
   useEffect(() => {
-      
     const fetchDelegatorParticipation = async () => {
       try {
         const data = await getDelegatorParticipation();

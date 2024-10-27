@@ -15,10 +15,10 @@ import DelegatorParticipation from "./components/DelegatorParticipation";
 import RewardsDistribution from "./components/RewardsDistribution";
 
 function App() {
-    const [tasksCreated, setTasksCreated] = useState([]);
-    const [tasksFinished, setTasksFinished] = useState([]);
+  const [tasksCreated, setTasksCreated] = useState([]);
+  const [tasksFinished, setTasksFinished] = useState([]);
   const [tasksError, setTasksError] = useState(null);
-  
+
   useEffect(() => {
     const fetchTasksEvents = async () => {
       try {

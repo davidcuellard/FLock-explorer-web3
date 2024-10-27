@@ -228,7 +228,7 @@ header {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  align-items: center; 
+  align-items: center;
   text-align: center;
   padding: 1rem;
   margin-bottom: 1rem;
@@ -240,13 +240,13 @@ header {
   }
 
   a:hover {
-    color: #ffce21; 
+    color: #ffce21;
   }
 
   .logo-link {
-    margin-right: 1rem; 
+    margin-right: 1rem;
     display: flex;
-    align-items: center; 
+    align-items: center;
   }
 
   .encode-logo {
@@ -254,14 +254,13 @@ header {
   }
 
   div {
-    text-align: left; 
+    text-align: left;
     display: flex;
     flex-direction: column;
-    align-items: center; 
+    align-items: center;
     margin-top: 25px;
   }
 }
-
 
 .visualizer-page {
   margin-top: 20rem;

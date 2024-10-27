@@ -5,7 +5,7 @@ async function testConnection() {
     const blockNumber = await provider.getBlockNumber();
     console.log(
       "Connected to Base Sepolia network. Current block number:",
-      blockNumber
+      blockNumber,
     );
   } catch (error) {
     console.error("Error connecting to the network:", error);

@@ -4,14 +4,14 @@ import BigChart from "./BigChart";
 import { useNavigate } from "react-router-dom";
 
 function StakeTracking({ tasksCreated, tasksFinished }) {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [graphData, setGraphData] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStakeTracking = async () => {
       try {
-        const data = await getStakeTracking(); 
+        const data = await getStakeTracking();
 
         let cumulativeNodeStake = 0;
         let cumulativeValidatorStake = 0;
@@ -46,7 +46,7 @@ function StakeTracking({ tasksCreated, tasksFinished }) {
         });
 
         const dataPoints = Array.from(dataPointsMap.values()).sort(
-          (a, b) => a.blockNumber - b.blockNumber
+          (a, b) => a.blockNumber - b.blockNumber,
         );
 
         setGraphData(dataPoints);

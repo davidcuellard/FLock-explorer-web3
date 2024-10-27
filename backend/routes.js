@@ -25,7 +25,7 @@ router.get("/nodes", async (req, res) => {
     const nodeDepositEvents = await TaskManagerContract.queryFilter(
       nodeDepositFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const nodes = new Set();
@@ -38,7 +38,7 @@ router.get("/nodes", async (req, res) => {
     const rewardsEvents = await TaskManagerContract.queryFilter(
       rewardsFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const nodeRewardsMap = {};
@@ -76,7 +76,7 @@ router.get("/nodes", async (req, res) => {
         } catch (error) {
           console.error(
             `Error fetching total stakes for node ${nodeAddress}:`,
-            error
+            error,
           );
         }
         return {
@@ -84,7 +84,7 @@ router.get("/nodes", async (req, res) => {
           rewardAmount: (nodeRewardsMap[nodeAddress] || BigInt(0)).toString(),
           totalStakes,
         };
-      })
+      }),
     );
 
     cache.set(cacheKey, nodesData);
@@ -111,23 +111,23 @@ router.get("/nodes/:id", async (req, res) => {
       taskIds.map(async (taskId) => {
         const nodeStake = await TaskManagerContract.getNodeStakes(
           taskId,
-          nodeId
+          nodeId,
         );
         return {
           taskId: taskId.toString(),
           nodeStake: nodeStake.toString(),
         };
-      })
+      }),
     );
 
     const depositFilter = TaskManagerContract.filters.NodeStakeDeposited(
       null,
-      nodeId
+      nodeId,
     );
     const depositEvents = await TaskManagerContract.queryFilter(
       depositFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const deposits = depositEvents.map((event) => ({
@@ -139,12 +139,12 @@ router.get("/nodes/:id", async (req, res) => {
 
     const withdrawFilter = TaskManagerContract.filters.NodeStakeWithdrawn(
       null,
-      nodeId
+      nodeId,
     );
     const withdrawEvents = await TaskManagerContract.queryFilter(
       withdrawFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const withdrawals = withdrawEvents.map((event) => ({
@@ -159,7 +159,7 @@ router.get("/nodes/:id", async (req, res) => {
     const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
       rewardsClaimedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const rewardsClaimed = rewardsClaimedEvents.map((event) => ({
@@ -173,7 +173,7 @@ router.get("/nodes/:id", async (req, res) => {
       totalStakes: totalStakes.toString(),
       rewardAmount: rewardAmount.toString(),
       availableRewardTasksForUser: availableRewardTasksForUser.map((id) =>
-        id.toString()
+        id.toString(),
       ),
       taskStakeDetails,
       deposits,
@@ -198,18 +198,18 @@ router.get("/validators", async (req, res) => {
     const stakeEvents = await TaskManagerContract.queryFilter(
       stakeFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const validatorAddressesWithStakes = new Set(
-      stakeEvents.map((event) => event.args.validator)
+      stakeEvents.map((event) => event.args.validator),
     );
 
     const rewardsClaimedFilter = TaskManagerContract.filters.RewardsClaimed();
     const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
       rewardsClaimedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const rewardsMap = new Map();
@@ -221,7 +221,7 @@ router.get("/validators", async (req, res) => {
         if (rewardsMap.has(validatorAddress)) {
           rewardsMap.set(
             validatorAddress,
-            rewardsMap.get(validatorAddress) + rewardAmount
+            rewardsMap.get(validatorAddress) + rewardAmount,
           );
         } else {
           rewardsMap.set(validatorAddress, rewardAmount);
@@ -238,7 +238,7 @@ router.get("/validators", async (req, res) => {
 
     const paginatedValidators = validatorsArray.slice(
       (page - 1) * limit,
-      page * limit
+      page * limit,
     );
 
     const validatorsData = await Promise.all(
@@ -246,13 +246,13 @@ router.get("/validators", async (req, res) => {
         let totalStakes = "0";
         try {
           const validatorStake = await TaskManagerContract.getTotalStakes(
-            validator.address
+            validator.address,
           );
           totalStakes = validatorStake.toString();
         } catch (error) {
           console.error(
             `Error fetching total stakes for validator ${validator.address}:`,
-            error
+            error,
           );
         }
 
@@ -261,7 +261,7 @@ router.get("/validators", async (req, res) => {
           rewardAmount: validator.rewardAmount.toString(),
           totalStakes,
         };
-      })
+      }),
     );
 
     res.json(validatorsData);
@@ -276,9 +276,8 @@ router.get("/validators", async (req, res) => {
 router.get("/validators/:id", async (req, res) => {
   const validatorId = req.params.id;
   try {
-    const validatorStake = await TaskManagerContract.getTotalStakes(
-      validatorId
-    );
+    const validatorStake =
+      await TaskManagerContract.getTotalStakes(validatorId);
     const rewardAmount = await TaskManagerContract.userRewards(validatorId);
     const availableRewardTasksForUser =
       await TaskManagerContract.getAvailableRewardTasksForUser(validatorId);
@@ -290,12 +289,12 @@ router.get("/validators/:id", async (req, res) => {
       try {
         const taskId = await TaskManagerContract.validatorTasks(
           validatorId,
-          index
+          index,
         );
 
         const validatorStake = await TaskManagerContract.getValidatorStakes(
           taskId,
-          validatorId
+          validatorId,
         );
 
         validatorTasks.push({
@@ -311,12 +310,12 @@ router.get("/validators/:id", async (req, res) => {
 
     const depositsFilter = TaskManagerContract.filters.ValidatorStakeDeposited(
       null,
-      validatorId
+      validatorId,
     );
     const deposits = await TaskManagerContract.queryFilter(
       depositsFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const withdrawalsFilter =
@@ -324,7 +323,7 @@ router.get("/validators/:id", async (req, res) => {
     const withdrawals = await TaskManagerContract.queryFilter(
       withdrawalsFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const depositsData = deposits.map((event) => ({
@@ -346,7 +345,7 @@ router.get("/validators/:id", async (req, res) => {
     const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
       rewardsClaimedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const rewardsClaimed = rewardsClaimedEvents.map((event) => ({
@@ -360,7 +359,7 @@ router.get("/validators/:id", async (req, res) => {
       totalStakes: validatorStake.toString(),
       rewardAmount: rewardAmount.toString(),
       availableRewardTasksForUser: availableRewardTasksForUser.map((id) =>
-        id.toString()
+        id.toString(),
       ),
       validatorTasks,
       deposits: depositsData,
@@ -385,24 +384,23 @@ router.get("/delegators", async (req, res) => {
     const events = await TaskManagerContract.queryFilter(filter, 0, "latest");
 
     const delegatorAddresses = Array.from(
-      new Set(events.map((event) => event.args.delegator))
+      new Set(events.map((event) => event.args.delegator)),
     );
     const paginatedDelegatorAddresses = paginate(
       delegatorAddresses,
       page,
-      limit
+      limit,
     );
 
     const delegatorsData = await Promise.all(
       paginatedDelegatorAddresses.map(async (delegatorAddress) => {
-        const totalDelegationAmount = await TaskManagerContract.getTotalStakes(
-          delegatorAddress
-        );
+        const totalDelegationAmount =
+          await TaskManagerContract.getTotalStakes(delegatorAddress);
         return {
           address: delegatorAddress,
           totalStakes: totalDelegationAmount.toString(),
         };
-      })
+      }),
     );
 
     res.json(delegatorsData);
@@ -417,9 +415,8 @@ router.get("/delegators", async (req, res) => {
 router.get("/delegators/:id", async (req, res) => {
   const delegatorId = req.params.id;
   try {
-    const totalDelegationAmount = await TaskManagerContract.getTotalStakes(
-      delegatorId
-    );
+    const totalDelegationAmount =
+      await TaskManagerContract.getTotalStakes(delegatorId);
     const rewardAmount = await TaskManagerContract.userRewards(delegatorId);
 
     const delegatorTasks = [];
@@ -429,17 +426,17 @@ router.get("/delegators/:id", async (req, res) => {
       try {
         const task = await TaskManagerContract.delegatorTasks(
           delegatorId,
-          index
+          index,
         );
 
         const delegationStake = await TaskManagerContract.delegatorStakes(
           task.taskId,
-          delegatorId
+          delegatorId,
         );
         const latestReward =
           await TaskManagerContract.latestRewardForDelegators(
             task.taskId,
-            delegatorId
+            delegatorId,
           );
 
         delegatorTasks.push({
@@ -460,7 +457,7 @@ router.get("/delegators/:id", async (req, res) => {
     const rewardsClaimedEvents = await TaskManagerContract.queryFilter(
       rewardsClaimedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const rewardsClaimed = rewardsClaimedEvents.map((event) => ({
@@ -537,7 +534,7 @@ router.get("/tasks-event", async (req, res) => {
     const taskCreatedEvents = await TaskManagerContract.queryFilter(
       taskCreatedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const taskCreatedData = taskCreatedEvents.map((event) => ({
@@ -552,7 +549,7 @@ router.get("/tasks-event", async (req, res) => {
     const taskFinishedEvents = await TaskManagerContract.queryFilter(
       taskFinishedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const taskFinishedData = taskFinishedEvents.map((event) => ({
@@ -581,7 +578,7 @@ router.get("/rewards-distribution", async (req, res) => {
     const rewardedEvents = await TaskManagerContract.queryFilter(
       rewardedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const rewardedData = rewardedEvents.map((event) => ({
@@ -594,7 +591,7 @@ router.get("/rewards-distribution", async (req, res) => {
     const claimedEvents = await TaskManagerContract.queryFilter(
       claimedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const claimedData = claimedEvents.map((event) => ({
@@ -622,7 +619,7 @@ router.get("/stake-tracking", async (req, res) => {
     const nodeDepositEvents = await TaskManagerContract.queryFilter(
       nodeDepositFilter,
       0,
-      "latest"
+      "latest",
     );
     const nodeDeposits = nodeDepositEvents.map((event) => ({
       blockNumber: event.blockNumber,
@@ -634,7 +631,7 @@ router.get("/stake-tracking", async (req, res) => {
     const nodeWithdrawEvents = await TaskManagerContract.queryFilter(
       nodeWithdrawFilter,
       0,
-      "latest"
+      "latest",
     );
     const nodeWithdrawals = nodeWithdrawEvents.map((event) => ({
       blockNumber: event.blockNumber,
@@ -647,7 +644,7 @@ router.get("/stake-tracking", async (req, res) => {
     const validatorDepositEvents = await TaskManagerContract.queryFilter(
       validatorDepositFilter,
       0,
-      "latest"
+      "latest",
     );
     const validatorDeposits = validatorDepositEvents.map((event) => ({
       blockNumber: event.blockNumber,
@@ -660,7 +657,7 @@ router.get("/stake-tracking", async (req, res) => {
     const validatorWithdrawEvents = await TaskManagerContract.queryFilter(
       validatorWithdrawFilter,
       0,
-      "latest"
+      "latest",
     );
     const validatorWithdrawals = validatorWithdrawEvents.map((event) => ({
       blockNumber: event.blockNumber,
@@ -693,7 +690,7 @@ router.get("/delegator-participation", async (req, res) => {
     const stakedEvents = await TaskManagerContract.queryFilter(
       stakedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const stakedData = stakedEvents.map((event) => ({
@@ -706,7 +703,7 @@ router.get("/delegator-participation", async (req, res) => {
     const unstakedEvents = await TaskManagerContract.queryFilter(
       unstakedFilter,
       0,
-      "latest"
+      "latest",
     );
 
     const unstakedData = unstakedEvents.map((event) => ({

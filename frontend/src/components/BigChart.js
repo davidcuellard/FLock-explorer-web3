@@ -12,7 +12,6 @@ import {
 } from "recharts";
 
 function BigChart({ graphData, tasksCreated, tasksFinished, additionalLines }) {
- 
   const firstTaskBlock =
     tasksCreated.length > 0 ? tasksCreated[0].blockNumber : 0;
   const startBlock = firstTaskBlock > 100000 ? firstTaskBlock - 100000 : 0;
@@ -43,12 +42,7 @@ function BigChart({ graphData, tasksCreated, tasksFinished, additionalLines }) {
 
       {/* Primary Line */}
       {graphData.length > 0 && (
-        <Line
-          type="monotone"
-          dataKey="amount" 
-          stroke="#ffce21"
-          dot={false}
-        />
+        <Line type="monotone" dataKey="amount" stroke="#ffce21" dot={false} />
       )}
 
       {additionalLines &&
