@@ -2,6 +2,9 @@
 
 Welcome to the FLock Training Nodes and Validators Explorer! This project aims to provide a transparent view of the FLock ecosystem, allowing users to explore training nodes and validators with detailed metrics and performance insights. Think of it as a specialized block explorer tailored to display AI model metrics, rankings, and earnings.
 
+# Gif
+![image](https://github.com/davidcuellard/FLock-explorer-web3/blob/main/frontend/src/public/demo.gif?raw=true)    
+
 ## Key Features
 
 - Node and Validator Listings: General information such as address, total stakes, user, reward amount, rewards claimed, node tasks with node stake, and two charts: Stake History and Total Rewards Claimed History. Delegators have similar information, except without the Stake History.
