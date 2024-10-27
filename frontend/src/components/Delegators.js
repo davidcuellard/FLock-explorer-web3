@@ -7,11 +7,11 @@ function Delegators() {
   const [delegatorsPage, setDelegatorsPage] = useState(1);
   const itemsPerPage = 10;
 
-  const fetchData = async () => {
-    setDelegators(await getDelegators(delegatorsPage, itemsPerPage));
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setDelegators(await getDelegators(delegatorsPage, itemsPerPage));
+    };
+
     fetchData();
   }, [delegatorsPage]);
 

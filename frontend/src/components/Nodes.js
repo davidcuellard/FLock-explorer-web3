@@ -7,11 +7,11 @@ function Nodes() {
   const [nodesPage, setNodesPage] = useState(1);
   const itemsPerPage = 10;
 
-  const fetchData = async () => {
-    setNodes(await getNodes(nodesPage, itemsPerPage));
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setNodes(await getNodes(nodesPage, itemsPerPage));
+    };
+
     fetchData();
   }, [nodesPage]);
 

@@ -7,11 +7,10 @@ function Validators() {
   const [validatorsPage, setValidatorsPage] = useState(1);
   const itemsPerPage = 10;
 
-  const fetchData = async () => {
-    setValidators(await getValidators(validatorsPage, itemsPerPage));
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setValidators(await getValidators(validatorsPage, itemsPerPage));
+    };
     fetchData();
   }, [validatorsPage]);
 

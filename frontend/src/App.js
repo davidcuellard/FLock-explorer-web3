@@ -116,12 +116,20 @@ function App() {
             />
           </Link>
           <div>
-            <a target="_blank" href="https://www.encode.club/encodelondon-24/">
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.encode.club/encodelondon-24/"
+            >
               Encode London - 25th-27th October, 2024{" "}
             </a>
             <p>
               © 2024 David Cuellar. All rights reserved,{" "}
-              <a target="_blank" href="https://github.com/davidcuellard">
+              <a
+                target="_blank"
+                rel="noreferrer"
+                 href="https://github.com/davidcuellard"
+              >
                 GitHub
               </a>
             </p>

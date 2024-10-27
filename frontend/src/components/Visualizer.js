@@ -1,6 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { getTasksEvents } from "../api";
-import BigChart from "./BigChart";
+import React from "react";
 import { Link } from "react-router-dom";
 
 function Visualizer() {
