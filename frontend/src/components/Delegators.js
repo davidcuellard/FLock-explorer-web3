@@ -15,7 +15,6 @@ function Delegators() {
     fetchData();
   }, [delegatorsPage]);
 
-  console.log(delegators)
   return (
     <List
       title="Validators"

@@ -1,10 +1,8 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 import { formatNumber } from "../utils/formatNumber";
 
 function List({ title, data, currentPage, onPageChange, itemsPerPage }) {
-  const navigate = useNavigate();
   const handlePreviousPage = () => {
     onPageChange((prevPage) => Math.max(prevPage - 1, 1));
   };
@@ -15,9 +13,6 @@ function List({ title, data, currentPage, onPageChange, itemsPerPage }) {
 
   return (
     <div className="list-container">
-      <button onClick={() => navigate(-1)} className="back-button">
-        Back
-      </button>
       <h2>{title}</h2>
       <table className="list-table">
         <thead>
@@ -73,7 +68,7 @@ List.propTypes = {
     PropTypes.shape({
       address: PropTypes.string.isRequired,
       totalStakes: PropTypes.string.isRequired,
-    })
+    }),
   ).isRequired,
   currentPage: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,

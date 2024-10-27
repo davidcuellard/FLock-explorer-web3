@@ -1,35 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import List from "./components/List";
 import NodeDetails from "./components/NodeDetails";
 import ValidatorDetails from "./components/ValidatorDetails";
 import DelegatorDetails from "./components/DelegatorDetails";
-import { getNodes, getValidators, getDelegators } from "./api";
+import { getTasksEvents } from "./api";
 import "./App.scss";
 import TaskDetails from "./components/TaskDetails";
 import Visualizer from "./components/Visualizer";
 import Nodes from "./components/Nodes";
 import Validators from "./components/Validators";
 import Delegators from "./components/Delegators";
+import StakeTracking from "./components/StakeTracking";
+import DelegatorParticipation from "./components/DelegatorParticipation";
+import RewardsDistribution from "./components/RewardsDistribution";
 
 function App() {
-  const [nodes, setNodes] = useState([]);
-  const [validators, setValidators] = useState([]);
-  const [delegators, setDelegators] = useState([]);
-  const [nodesPage, setNodesPage] = useState(1);
-  const [validatorsPage, setValidatorsPage] = useState(1);
-  const [delegatorsPage, setDelegatorsPage] = useState(1);
-  const itemsPerPage = 10;
-
-  const fetchData = async () => {
-    setNodes(await getNodes(nodesPage, itemsPerPage));
-    setValidators(await getValidators(validatorsPage, itemsPerPage));
-    setDelegators(await getDelegators(delegatorsPage, itemsPerPage));
-  };
+  const [tasksCreated, setTasksCreated] = useState([]);
+  const [tasksFinished, setTasksFinished] = useState([]);
+  const [tasksError, setTasksError] = useState(null);
 
   useEffect(() => {
-    fetchData();
-  }, [nodesPage, validatorsPage, delegatorsPage]);
+    const fetchTasksEvents = async () => {
+      try {
+        const tasks = await getTasksEvents();
+
+        const tasksCreatedData = tasks.taskCreated.map((task) => ({
+          blockNumber: task.blockNumber,
+          taskId: task.taskId,
+          type: "TaskCreated",
+        }));
+        const tasksFinishedData = tasks.taskFinished.map((task) => ({
+          blockNumber: task.blockNumber,
+          taskId: task.taskId,
+          type: "TaskFinished",
+        }));
+
+        setTasksCreated(tasksCreatedData);
+        setTasksFinished(tasksFinishedData);
+      } catch (error) {
+        console.error("Error fetching tasks events:", error);
+        setTasksError("Unable to fetch task events, please try again later.");
+      }
+    };
+
+    fetchTasksEvents();
+  }, []);
+
+  if (tasksError) {
+    return <div className="error-message">{tasksError}</div>;
+  }
 
   return (
     <Router>
@@ -59,15 +78,54 @@ function App() {
             <Route path="/validators/:id" element={<ValidatorDetails />} />
             <Route path="/delegators/:id" element={<DelegatorDetails />} />
             <Route path="/tasks/:id" element={<TaskDetails />} />
+            <Route
+              path="/stake-tracking"
+              element={
+                <StakeTracking
+                  tasksCreated={tasksCreated}
+                  tasksFinished={tasksFinished}
+                />
+              }
+            />
+            <Route
+              path="/delegator-participation"
+              element={
+                <DelegatorParticipation
+                  tasksCreated={tasksCreated}
+                  tasksFinished={tasksFinished}
+                />
+              }
+            />
+            <Route
+              path="/rewards-distribution"
+              element={
+                <RewardsDistribution
+                  tasksCreated={tasksCreated}
+                  tasksFinished={tasksFinished}
+                />
+              }
+            />
           </Routes>
         </main>
         <footer className="footer">
-          <p>
-            © 2023 David Cuellar. All rights reserved,{" "}
-            <a target="_blank" href="https://github.com/davidcuellard">
-              GitHub
+          <Link to="/" className="logo-link">
+            <img
+              src="https://images.squarespace-cdn.com/content/v1/5f9bcc27c14fc6134658484b/461cb28e-9812-4327-8544-5a8a901a6bfc/logo_02+%281%29.png?format=1500w"
+              alt="Encode London"
+              className="encode-logo"
+            />
+          </Link>
+          <div>
+            <a target="_blank" href="https://www.encode.club/encodelondon-24/">
+              Encode London - 25th-27th October, 2024{" "}
             </a>
-          </p>
+            <p>
+              © 2024 David Cuellar. All rights reserved,{" "}
+              <a target="_blank" href="https://github.com/davidcuellard">
+                GitHub
+              </a>
+            </p>
+          </div>
         </footer>
       </div>
     </Router>

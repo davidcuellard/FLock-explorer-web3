@@ -2,12 +2,8 @@ const { TaskManagerContract } = require("./contracts");
 
 async function testTaskManager() {
   try {
-    const filter = TaskManagerContract.filters.TaskFinished();
-    const events = await TaskManagerContract.queryFilter(
-      filter,
-      0,
-      "latest"
-    );
+    const filter = TaskManagerContract.filters.DelegatorUnstaked();
+    const events = await TaskManagerContract.queryFilter(filter, 0, "latest");
 
     const nodeAddresses = new Set();
     for (const event of events) {
