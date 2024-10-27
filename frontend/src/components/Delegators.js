@@ -17,7 +17,7 @@ function Delegators() {
 
   return (
     <List
-      title="Validators"
+      title="Delegators"
       data={delegators}
       itemsPerPage={itemsPerPage}
       currentPage={delegatorsPage}
