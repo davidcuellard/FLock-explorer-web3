@@ -51,7 +51,7 @@ function RewardsDistribution({ tasksCreated, tasksFinished }) {
   if (!graphData.length) return <div className="loading">Loading...</div>;
 
   return (
-    <div className="rewards-distribution-page">
+    <div className="rewards-claimed-page">
       <button onClick={() => navigate(-1)} className="back-button">
         Back
       </button>
