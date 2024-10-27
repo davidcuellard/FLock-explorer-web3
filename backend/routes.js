@@ -30,7 +30,7 @@ router.get("/nodes", async (req, res) => {
 
     const nodes = new Set();
     nodeDepositEvents.forEach((event) => {
-      nodes.add(event.args[1]); 
+      nodes.add(event.args[1]);
     });
     const nodeAddresses = Array.from(nodes);
 
@@ -521,11 +521,208 @@ router.get("/rewards-claimed", async (req, res) => {
       amount: event.args[1].toString(),
     }));
 
-    res.json(rewardsClaimed);
+    res.json({ rewardsClaimed }); // <- Ensure this structure
   } catch (error) {
     console.error("Error fetching reward claim details:", error);
     res.status(500).json({
       error: "Error fetching reward claim details",
+      details: error.message,
+    });
+  }
+});
+
+router.get("/tasks-event", async (req, res) => {
+  try {
+    const taskCreatedFilter = TaskManagerContract.filters.TaskCreated();
+    const taskCreatedEvents = await TaskManagerContract.queryFilter(
+      taskCreatedFilter,
+      0,
+      "latest"
+    );
+
+    const taskCreatedData = taskCreatedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      taskId: event.args[0].toString(),
+      creator: event.args[1],
+      expectedDuration: event.args[2].toString(),
+      stakeAmount: event.args[3].toString(),
+    }));
+
+    const taskFinishedFilter = TaskManagerContract.filters.TaskFinished();
+    const taskFinishedEvents = await TaskManagerContract.queryFilter(
+      taskFinishedFilter,
+      0,
+      "latest"
+    );
+
+    const taskFinishedData = taskFinishedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      taskId: event.args[0].toString(),
+    }));
+
+    const tasksEventData = {
+      taskCreated: taskCreatedData,
+      taskFinished: taskFinishedData,
+    };
+
+    res.json(tasksEventData);
+  } catch (error) {
+    console.error("Error fetching task events:", error);
+    res.status(500).json({
+      error: "Error fetching task events",
+      details: error.message,
+    });
+  }
+});
+
+router.get("/rewards-distribution", async (req, res) => {
+  try {
+    const rewardedFilter = TaskManagerContract.filters.ParticipantRewarded();
+    const rewardedEvents = await TaskManagerContract.queryFilter(
+      rewardedFilter,
+      0,
+      "latest"
+    );
+
+    const rewardedData = rewardedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "ParticipantRewarded",
+      amount: event.args[1].toString(), // Assuming `args[1]` contains the reward amount
+    }));
+
+    const claimedFilter = TaskManagerContract.filters.RewardsClaimed();
+    const claimedEvents = await TaskManagerContract.queryFilter(
+      claimedFilter,
+      0,
+      "latest"
+    );
+
+    const claimedData = claimedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "RewardsClaimed",
+      amount: event.args[1].toString(), // Assuming `args[1]` contains the claimed amount
+    }));
+
+    const combinedEvents = [...rewardedData, ...claimedData];
+    combinedEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+
+    res.json(combinedEvents);
+  } catch (error) {
+    console.error("Error fetching rewards distribution details:", error);
+    res.status(500).json({
+      error: "Error fetching rewards distribution details",
+      details: error.message,
+    });
+  }
+});
+
+router.get("/stake-tracking", async (req, res) => {
+  try {
+    const nodeDepositFilter = TaskManagerContract.filters.NodeStakeDeposited();
+    const nodeDepositEvents = await TaskManagerContract.queryFilter(
+      nodeDepositFilter,
+      0,
+      "latest"
+    );
+    const nodeDeposits = nodeDepositEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "NodeStakeDeposited",
+      amount: event.args[2].toString(), // Assuming args[2] contains the deposit amount
+    }));
+
+    const nodeWithdrawFilter = TaskManagerContract.filters.NodeStakeWithdrawn();
+    const nodeWithdrawEvents = await TaskManagerContract.queryFilter(
+      nodeWithdrawFilter,
+      0,
+      "latest"
+    );
+    const nodeWithdrawals = nodeWithdrawEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "NodeStakeWithdrawn",
+      amount: event.args[2].toString(), // Assuming args[2] contains the withdrawal amount
+    }));
+
+    const validatorDepositFilter =
+      TaskManagerContract.filters.ValidatorStakeDeposited();
+    const validatorDepositEvents = await TaskManagerContract.queryFilter(
+      validatorDepositFilter,
+      0,
+      "latest"
+    );
+    const validatorDeposits = validatorDepositEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "ValidatorStakeDeposited",
+      amount: event.args[2].toString(), // Assuming args[2] contains the deposit amount
+    }));
+
+    const validatorWithdrawFilter =
+      TaskManagerContract.filters.ValidatorStakeWithdrawn();
+    const validatorWithdrawEvents = await TaskManagerContract.queryFilter(
+      validatorWithdrawFilter,
+      0,
+      "latest"
+    );
+    const validatorWithdrawals = validatorWithdrawEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "ValidatorStakeWithdrawn",
+      amount: event.args[2].toString(), // Assuming args[2] contains the withdrawal amount
+    }));
+
+    const allStakeEvents = [
+      ...nodeDeposits,
+      ...nodeWithdrawals,
+      ...validatorDeposits,
+      ...validatorWithdrawals,
+    ];
+
+    allStakeEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+
+    res.json(allStakeEvents);
+  } catch (error) {
+    console.error("Error fetching stake tracking events:", error);
+    res.status(500).json({
+      error: "Error fetching stake tracking events",
+      details: error.message,
+    });
+  }
+});
+
+router.get("/delegator-participation", async (req, res) => {
+  try {
+    const stakedFilter = TaskManagerContract.filters.DelegatorStaked();
+    const stakedEvents = await TaskManagerContract.queryFilter(
+      stakedFilter,
+      0,
+      "latest"
+    );
+
+    const stakedData = stakedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "DelegatorStaked",
+      amount: event.args[3].toString(),
+    }));
+
+    const unstakedFilter = TaskManagerContract.filters.DelegatorUnstaked();
+    const unstakedEvents = await TaskManagerContract.queryFilter(
+      unstakedFilter,
+      0,
+      "latest"
+    );
+
+    const unstakedData = unstakedEvents.map((event) => ({
+      blockNumber: event.blockNumber,
+      type: "DelegatorUnstaked",
+      amount: event.args[3].toString(),
+    }));
+
+    const combinedEvents = [...stakedData, ...unstakedData];
+    combinedEvents.sort((a, b) => a.blockNumber - b.blockNumber);
+
+    res.json(combinedEvents);
+  } catch (error) {
+    console.error("Error fetching delegator participation details:", error);
+    res.status(500).json({
+      error: "Error fetching delegator participation details",
       details: error.message,
     });
   }

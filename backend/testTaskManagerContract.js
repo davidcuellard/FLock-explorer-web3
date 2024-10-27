@@ -2,7 +2,7 @@ const { TaskManagerContract } = require("./contracts");
 
 async function testTaskManager() {
   try {
-    const filter = TaskManagerContract.filters.TaskFinished();
+    const filter = TaskManagerContract.filters.DelegatorUnstaked();
     const events = await TaskManagerContract.queryFilter(
       filter,
       0,

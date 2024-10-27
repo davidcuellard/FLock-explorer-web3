@@ -19,18 +19,16 @@ const fetchData = async (url, options = {}, retries = 3, delay = 1000) => {
       }
       if (i < retries - 1)
         await new Promise((resolve) => setTimeout(resolve, delay * 2 ** i));
-      else throw error; 
+      else throw error;
     }
   }
 };
-
 
 const getPaginatedList = (
   endpoint,
   page = DEFAULT_PAGE,
   limit = DEFAULT_LIMIT
 ) => fetchData(`${API_BASE_URL}/${endpoint}`, { params: { page, limit } });
-
 
 const getDetailsById = (endpoint, id) => {
   if (endpoint !== "tasks" && !/^0x[a-fA-F0-9]{40}$/.test(id)) {
@@ -59,4 +57,20 @@ export const getValidatorDetails = (validatorId) =>
 export const getTaskDetails = (taskId) => getDetailsById("tasks", taskId);
 
 // API Function for Rewards
-export const getRewardsClaimed = () => fetchData(`${API_BASE_URL}/rewards-claimed`);
+export const getRewardsClaimed = () =>
+  fetchData(`${API_BASE_URL}/rewards-claimed`);
+
+// API Function for tasks-event
+export const getTasksEvents = () => fetchData(`${API_BASE_URL}/tasks-event`);
+
+// API Function for rewards-distribution
+export const getRewardsDistribution = () =>
+  fetchData(`${API_BASE_URL}/rewards-distribution`);
+
+// API Function for stake-tracking
+export const getStakeTracking = () =>
+  fetchData(`${API_BASE_URL}/stake-tracking`);
+
+// API Function for delegator-participation
+export const getDelegatorParticipation = () =>
+  fetchData(`${API_BASE_URL}/delegator-participation`);

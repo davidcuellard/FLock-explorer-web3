@@ -68,13 +68,11 @@ main {
       padding: 5px 10px;
       border-radius: 5px;
       text-decoration: none;
-
-      
     }
 
-    .view-button:hover{
-        background-color: $yellow-2;
-      }
+    .view-button:hover {
+      background-color: $yellow-2;
+    }
   }
 
   .pagination {
@@ -221,23 +219,64 @@ header {
     }
   }
 
-  .menu a:hover{
+  .menu a:hover {
     color: $yellow-2;
   }
 }
 
 .footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center; 
   text-align: center;
   padding: 1rem;
   margin-bottom: 1rem;
   color: #ccc;
+
+  a {
+    color: #bbb;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: #ffce21; 
+  }
+
+  .logo-link {
+    margin-right: 1rem; 
+    display: flex;
+    align-items: center; 
+  }
+
+  .encode-logo {
+    width: 7rem;
+  }
+
+  div {
+    text-align: left; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    margin-top: 25px;
+  }
 }
 
-.footer a {
-  color: #bbb;
-  text-decoration: none;
-}
 
-.footer a:hover {
-  color: $yellow-2;
+.visualizer-page {
+  margin-top: 20rem;
+  .submenu {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    a {
+      color: $yellow;
+      text-decoration: none;
+      font-size: 1.5rem;
+    }
+  }
+
+  .submenu a:hover {
+    color: $white;
+  }
 }
