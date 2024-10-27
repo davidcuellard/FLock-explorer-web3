@@ -63,10 +63,6 @@ export const getRewardsClaimed = () =>
 // API Function for tasks-event
 export const getTasksEvents = () => fetchData(`${API_BASE_URL}/tasks-event`);
 
-// API Function for rewards-distribution
-export const getRewardsDistribution = () =>
-  fetchData(`${API_BASE_URL}/rewards-distribution`);
-
 // API Function for stake-tracking
 export const getStakeTracking = () =>
   fetchData(`${API_BASE_URL}/stake-tracking`);

@@ -572,47 +572,6 @@ router.get("/tasks-event", async (req, res) => {
   }
 });
 
-router.get("/rewards-distribution", async (req, res) => {
-  try {
-    const rewardedFilter = TaskManagerContract.filters.ParticipantRewarded();
-    const rewardedEvents = await TaskManagerContract.queryFilter(
-      rewardedFilter,
-      0,
-      "latest",
-    );
-
-    const rewardedData = rewardedEvents.map((event) => ({
-      blockNumber: event.blockNumber,
-      type: "ParticipantRewarded",
-      amount: event.args[1].toString(), // Assuming `args[1]` contains the reward amount
-    }));
-
-    const claimedFilter = TaskManagerContract.filters.RewardsClaimed();
-    const claimedEvents = await TaskManagerContract.queryFilter(
-      claimedFilter,
-      0,
-      "latest",
-    );
-
-    const claimedData = claimedEvents.map((event) => ({
-      blockNumber: event.blockNumber,
-      type: "RewardsClaimed",
-      amount: event.args[1].toString(), // Assuming `args[1]` contains the claimed amount
-    }));
-
-    const combinedEvents = [...rewardedData, ...claimedData];
-    combinedEvents.sort((a, b) => a.blockNumber - b.blockNumber);
-
-    res.json(combinedEvents);
-  } catch (error) {
-    console.error("Error fetching rewards distribution details:", error);
-    res.status(500).json({
-      error: "Error fetching rewards distribution details",
-      details: error.message,
-    });
-  }
-});
-
 router.get("/stake-tracking", async (req, res) => {
   try {
     const nodeDepositFilter = TaskManagerContract.filters.NodeStakeDeposited();

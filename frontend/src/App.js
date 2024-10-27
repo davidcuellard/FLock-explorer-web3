@@ -97,7 +97,7 @@ function App() {
               }
             />
             <Route
-              path="/rewards-distribution"
+              path="/rewards-claimed"
               element={
                 <RewardsDistribution
                   tasksCreated={tasksCreated}
