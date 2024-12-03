@@ -24,17 +24,11 @@ The backend of the FLock Training Nodes and Validators Explorer provides APIs to
 BASE_SEPOLIA_RPC_URL=https://base-sepolia.g.alchemy.com/v2/<Your_Alchemy_Key>
 ```
 
-3. Change proxy to localhost:3001
-
-```
-"proxy": "http://localhost:3001",
-```
-
-4. Run the Server: Start the server using:
+3. Run the Server: Start the server using:
 
 `node index.js`
 
-5. Endpoints:
+4. Endpoints:
 
 - /nodes: Fetches all nodes with staking data, sorted by rewards claimed, including information such as address, reward amount, and total stakes.
 
