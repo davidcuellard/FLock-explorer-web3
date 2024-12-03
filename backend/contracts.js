@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../.env" });
+require("dotenv").config({ path: ".env" });
 const { ethers } = require("ethers");
 const provider = require("./blockchain");
 
