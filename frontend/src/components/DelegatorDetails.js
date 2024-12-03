@@ -9,7 +9,6 @@ function DelegatorDetails() {
   const navigate = useNavigate();
   const [delegator, setDelegator] = useState(null);
   const [rewardGraphData, setRewardGraphData] = useState([]);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDelegator = async () => {
@@ -46,7 +45,6 @@ function DelegatorDetails() {
         }
       } catch (error) {
         console.error("Error fetching delegator details:", error);
-        setError("Unable to fetch delegator details, please try again later.");
       }
     };
     fetchDelegator();
